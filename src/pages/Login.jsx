@@ -28,7 +28,6 @@ const Login = () => {
       // Save user in context
       login({ user, token });
 
-
       // Redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
@@ -39,35 +38,126 @@ const Login = () => {
     }
   };
 
+  // Styles
+  const containerStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    backgroundColor: '#e0f7fa', // Light teal
+    fontFamily: 'Arial, sans-serif',
+  };
+
+  const formStyle = {
+    backgroundColor: '#ffffff',
+    padding: '40px',
+    borderRadius: '12px',
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+    width: '100%',
+    maxWidth: '400px',
+  };
+
+  const headingStyle = {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    marginBottom: '20px',
+    textAlign: 'center',
+    color: '#00796b', // Teal shade
+  };
+
+  const labelStyle = {
+    display: 'block',
+    marginBottom: '8px',
+    fontSize: '14px',
+    color: '#333',
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '10px',
+    marginBottom: '20px',
+    borderRadius: '6px',
+    border: '1px solid #ccc',
+    fontSize: '14px',
+    outline: 'none',
+    transition: 'border-color 0.3s',
+  };
+
+  const inputFocusStyle = {
+    borderColor: '#00796b',
+  };
+
+  const buttonStyle = {
+    width: '100%',
+    padding: '12px',
+    backgroundColor: '#00796b',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '16px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s, transform 0.2s',
+  };
+
+  const buttonHoverStyle = {
+    backgroundColor: '#004d40',
+    transform: 'scale(1.02)',
+  };
+
+  const errorStyle = {
+    color: '#e53935',
+    marginBottom: '15px',
+    textAlign: 'center',
+    fontSize: '14px',
+  };
+
+  // Hover effects (manual because of inline CSS)
+  const [isButtonHovered, setIsButtonHovered] = useState(false);
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-full max-w-sm">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <div className="mb-4">
-          <label className="block mb-2 text-sm font-medium text-gray-600">Email</label>
+    <div style={containerStyle}>
+      <form onSubmit={handleSubmit} style={formStyle}>
+        <h2 style={headingStyle}>Login</h2>
+        {error && <p style={errorStyle}>{error}</p>}
+        <div>
+          <label style={labelStyle}>Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500"
+            style={{
+              ...inputStyle,
+              ...(isEmailFocused ? inputFocusStyle : {}),
+            }}
+            onFocus={() => setIsEmailFocused(true)}
+            onBlur={() => setIsEmailFocused(false)}
           />
         </div>
-        <div className="mb-6">
-          <label className="block mb-2 text-sm font-medium text-gray-600">Password</label>
+        <div>
+          <label style={labelStyle}>Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500"
+            style={{
+              ...inputStyle,
+              ...(isPasswordFocused ? inputFocusStyle : {}),
+            }}
+            onFocus={() => setIsPasswordFocused(true)}
+            onBlur={() => setIsPasswordFocused(false)}
           />
         </div>
         <button
           type="submit"
+          style={{
+            ...buttonStyle,
+            ...(isButtonHovered ? buttonHoverStyle : {}),
+          }}
           disabled={loading}
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition duration-200"
+          onMouseEnter={() => setIsButtonHovered(true)}
+          onMouseLeave={() => setIsButtonHovered(false)}
         >
           {loading ? 'Logging in...' : 'Login'}
         </button>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from '../api/axios';
 import { FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
 
-const TaskModal = ({ isOpen, onClose, task, refreshTasks, isAssignedByUser }) => {
+const TaskModal = ({ isOpen, onClose, task, refreshTasks, isAssignedByUser, isAssignedToUser }) => {
   const [editFormData, setEditFormData] = useState({
     title: '',
     description: '',
@@ -12,6 +12,7 @@ const TaskModal = ({ isOpen, onClose, task, refreshTasks, isAssignedByUser }) =>
   });
 
   const [users, setUsers] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -22,8 +23,8 @@ const TaskModal = ({ isOpen, onClose, task, refreshTasks, isAssignedByUser }) =>
         priority: task.priority || '',
         dueDate: task.dueDate ? task.dueDate.slice(0, 10) : '',
       });
+      fetchUsers();
     }
-    fetchUsers();
   }, [task]);
 
   const fetchUsers = async () => {
@@ -45,6 +46,7 @@ const TaskModal = ({ isOpen, onClose, task, refreshTasks, isAssignedByUser }) =>
     try {
       await axios.patch(`/api/tasks/${task._id}`, editFormData);
       refreshTasks();
+      setIsEditing(false);
       onClose();
     } catch (error) {
       console.error('Error editing task:', error);
@@ -61,130 +63,117 @@ const TaskModal = ({ isOpen, onClose, task, refreshTasks, isAssignedByUser }) =>
     }
   };
 
-  const handleMarkComplete = async () => {
+  const handleMarkAsComplete = async () => {
     try {
       await axios.patch(`/api/tasks/${task._id}`, { status: 'Completed' });
       refreshTasks();
       onClose();
     } catch (error) {
-      console.error('Error marking task complete:', error);
+      console.error('Error marking task as complete:', error);
     }
   };
 
   if (!isOpen || !task) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-60
-">
-      <div className="bg-white w-full max-w-lg mx-4 rounded-xl shadow-xl p-6 relative max-h-[90vh] overflow-y-auto">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
-        >
+    <div style={overlayStyle}>
+      <div style={modalStyle}>
+        <button onClick={onClose} style={{ float: 'right', background: 'none', border: 'none', fontSize: '16px', cursor: 'pointer' }}>
           <FaTimes />
         </button>
 
-        <h2 className="text-2xl font-bold mb-4 text-center">Task Details</h2>
+        <h2>Task Details</h2>
 
-        {isAssignedByUser ? (
-          <form onSubmit={handleEditSubmit} className="space-y-4">
+        {isEditing ? (
+          <form onSubmit={handleEditSubmit}>
             <div>
-              <label className="block text-sm font-medium">Title</label>
-              <input
-                type="text"
-                name="title"
-                value={editFormData.title}
-                onChange={handleEditChange}
-                className="w-full border rounded p-2 mt-1"
-              />
+              <label>Title:</label>
+              <input type="text" name="title" value={editFormData.title} onChange={handleEditChange} required />
             </div>
-
             <div>
-              <label className="block text-sm font-medium">Description</label>
-              <textarea
-                name="description"
-                value={editFormData.description}
-                onChange={handleEditChange}
-                className="w-full border rounded p-2 mt-1"
-              />
+              <label>Description:</label>
+              <textarea name="description" value={editFormData.description} onChange={handleEditChange} required />
             </div>
-
             <div>
-              <label className="block text-sm font-medium">Assigned To</label>
-              <select
-                name="assignedTo"
-                value={editFormData.assignedTo}
-                onChange={handleEditChange}
-                className="w-full border rounded p-2 mt-1"
-              >
-                <option value="">Select User</option>
+              <label>Assign To:</label>
+              <select name="assignedTo" value={editFormData.assignedTo._id} onChange={handleEditChange} required>
+                <option value="">Select user</option>
                 {users.map(user => (
                   <option key={user._id} value={user._id}>
-                    {user.name} ({user.role})
+                    {user.name}
                   </option>
                 ))}
               </select>
             </div>
-
             <div>
-              <label className="block text-sm font-medium">Priority</label>
-              <input
-                type="text"
-                name="priority"
-                value={editFormData.priority}
-                onChange={handleEditChange}
-                className="w-full border rounded p-2 mt-1"
-              />
+              <label>Priority:</label>
+              <select name="priority" value={editFormData.priority} onChange={handleEditChange} required>
+                <option value="">Select priority</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
             </div>
-
             <div>
-              <label className="block text-sm font-medium">Due Date</label>
-              <input
-                type="date"
-                name="dueDate"
-                value={editFormData.dueDate}
-                onChange={handleEditChange}
-                className="w-full border rounded p-2 mt-1"
-              />
+              <label>Due Date:</label>
+              <input type="date" name="dueDate" value={editFormData.dueDate} onChange={handleEditChange} required />
             </div>
-
-            <div className="flex justify-between gap-4 mt-4">
-              <button
-                type="submit"
-                className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-              >
-                <FaEdit className="inline mr-2" /> Update Task
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700"
-              >
-                <FaTrash className="inline mr-2" /> Delete Task
-              </button>
-            </div>
+            <button type="submit">Save</button>
+            <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
           </form>
         ) : (
-          <div className="space-y-3">
+          <div>
             <p><strong>Title:</strong> {task.title}</p>
             <p><strong>Description:</strong> {task.description}</p>
+            <p><strong>Assigned To:</strong> {task.assignedTo.name}</p>
             <p><strong>Priority:</strong> {task.priority}</p>
+            <p><strong>Due Date:</strong> {task.dueDate ? task.dueDate.slice(0, 10) : 'N/A'}</p>
             <p><strong>Status:</strong> {task.status}</p>
-            <p><strong>Due Date:</strong> {new Date(task.dueDate).toLocaleDateString()}</p>
+          </div>
+        )}
 
-            <div className="flex justify-center mt-6">
-              <button
-                onClick={handleMarkComplete}
-                className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
-              >
-                <FaCheck className="inline mr-2" /> Mark as Completed
+        {/* Action buttons */}
+        {!isEditing && (
+          <div style={{ marginTop: '20px' }}>
+            {isAssignedByUser && (
+              <>
+                <button onClick={() => setIsEditing(true)} style={{ marginRight: '10px' }}>
+                  <FaEdit /> Edit
+                </button>
+                <button onClick={handleDelete} style={{ color: 'red', marginRight: '10px' }}>
+                  <FaTrash /> Delete
+                </button>
+              </>
+            )}
+            {isAssignedToUser && (
+              <button onClick={handleMarkAsComplete} style={{ color: 'green' }}>
+                <FaCheck /> Mark as Complete
               </button>
-            </div>
+            )}
           </div>
         )}
       </div>
     </div>
   );
+};
+
+// Simple inline styles
+const overlayStyle = {
+  position: 'fixed',
+  top: 0, left: 0, right: 0, bottom: 0,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 1000,
+};
+
+const modalStyle = {
+  background: '#fff',
+  padding: '20px',
+  borderRadius: '8px',
+  width: '400px',
+  position: 'relative',
 };
 
 export default TaskModal;

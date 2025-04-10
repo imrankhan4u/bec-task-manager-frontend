@@ -27,11 +27,6 @@
 
 // export default Dashboard;
 
-
-
-
-
-
 // import React, { useEffect, useState } from 'react';
 // import axios from '../api/axios';
 // import { useAuth } from '../contexts/AuthContext';
@@ -151,12 +146,12 @@
 
 // export default Dashboard;
 
-import React, { useEffect, useState } from 'react';
-import axios from '../api/axios';
-import { useAuth } from '../contexts/AuthContext';
-import SummaryCard from '../components/SummaryCard';
-import TaskModal from '../components/TaskModal';
-import { FaClock, FaTasks } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import axios from "../api/axios";
+import { useAuth } from "../contexts/AuthContext";
+import SummaryCard from "../components/SummaryCard";
+import TaskModal from "../components/TaskModal";
+import { FaClock, FaTasks } from "react-icons/fa";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -171,19 +166,23 @@ const Dashboard = () => {
 
   const fetchTasks = async () => {
     try {
-      if (user.role !== 'Faculty') {
-        const assignedRes = await axios.get('/api/tasks/assigned');
-        const assignedPending = assignedRes.data.filter(task => task.status === 'Pending');
+      if (user.role !== "Faculty") {
+        const assignedRes = await axios.get("/api/tasks/assigned");
+        const assignedPending = assignedRes.data.filter(
+          (task) => task.status === "Pending"
+        );
         setAssignedPendingTasks(assignedPending);
       }
 
-      if (user.role !== 'Principal') {
-        const receivedRes = await axios.get('/api/tasks/received');
-        const receivedPending = receivedRes.data.filter(task => task.status === 'Pending');
+      if (user.role !== "Principal") {
+        const receivedRes = await axios.get("/api/tasks/received");
+        const receivedPending = receivedRes.data.filter(
+          (task) => task.status === "Pending"
+        );
         setReceivedPendingTasks(receivedPending);
       }
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      console.error("Error fetching tasks:", error);
     }
   };
 
@@ -193,7 +192,7 @@ const Dashboard = () => {
       closeTaskModal();
       fetchTasks();
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error("Error deleting task:", error);
     }
   };
 
@@ -203,17 +202,17 @@ const Dashboard = () => {
       closeTaskModal();
       fetchTasks();
     } catch (error) {
-      console.error('Error editing task:', error);
+      console.error("Error editing task:", error);
     }
   };
 
   const handleMarkCompleted = async (taskId) => {
     try {
-      await axios.put(`/api/tasks/${taskId}/complete`);
+      await axios.put(`/api/tasks/${taskId}/complete`, { status: "Completed" });
       closeTaskModal();
       fetchTasks();
     } catch (error) {
-      console.error('Error marking task as completed:', error);
+      console.error("Error marking task as completed:", error);
     }
   };
 
@@ -222,24 +221,36 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 space-y-6 border">
-      <h1 className="text-2xl font-bold">Welcome, {user?.name} ({user?.role})</h1>
+      <h1 className="text-2xl font-bold">
+        Welcome, {user?.name} ({user?.role})
+      </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {user.role !== 'Faculty' && (
-          <SummaryCard icon={<FaTasks />} title="Assigned Pending" count={assignedPendingTasks.length} />
+        {user.role !== "Faculty" && (
+          <SummaryCard
+            icon={<FaTasks />}
+            title="Pending Assigned Tasks"
+            count={assignedPendingTasks.length}
+          />
         )}
-        {user.role !== 'Principal' && (
-          <SummaryCard icon={<FaClock />} title="Received Pending" count={receivedPendingTasks.length} />
+        {user.role !== "Principal" && (
+          <SummaryCard
+            icon={<FaClock />}
+            title="Pending Received Tasks"
+            count={receivedPendingTasks.length}
+          />
         )}
       </div>
 
       {/* Pending Tasks Lists */}
       <div className="mt-6">
-        {user.role !== 'Faculty' && (
+        {user.role !== "Faculty" && (
           <div className="mb-4">
-            <h2 className="text-lg font-semibold mb-2">Assigned Pending Tasks</h2>
+            <h2 className="text-lg font-semibold mb-2">
+              Pending Assigned Tasks
+            </h2>
             <ul className="space-y-2">
-              {assignedPendingTasks.map(task => (
+              {assignedPendingTasks.map((task) => (
                 <li
                   key={task._id}
                   className="p-3 bg-gray-100 rounded cursor-pointer hover:bg-gray-200"
@@ -252,11 +263,13 @@ const Dashboard = () => {
           </div>
         )}
 
-        {user.role !== 'Principal' && (
+        {user.role !== "Principal" && (
           <div>
-            <h2 className="text-lg font-semibold mb-2">Received Pending Tasks</h2>
+            <h2 className="text-lg font-semibold mb-2">
+              Pending Received Tasks
+            </h2>
             <ul className="space-y-2">
-              {receivedPendingTasks.map(task => (
+              {receivedPendingTasks.map((task) => (
                 <li
                   key={task._id}
                   className="p-3 bg-gray-100 rounded cursor-pointer hover:bg-gray-200"
@@ -275,9 +288,9 @@ const Dashboard = () => {
         isOpen={!!selectedTask}
         onClose={closeTaskModal}
         task={selectedTask}
-        onDelete={user.role !== 'Faculty' && selectedTask?.assignedBy === user._id ? handleDeleteTask : null}
-        onEdit={user.role !== 'Faculty' && selectedTask?.assignedBy === user._id ? handleEditTask : null}
-        onMarkCompleted={user.role !== 'Principal' && selectedTask?.assignedTo === user._id ? handleMarkCompleted : null}
+        refreshTasks={fetchTasks} // ✅ Add this line
+        isAssignedByUser={selectedTask?.assignedBy._id === user._id}
+        isAssignedToUser={selectedTask?.assignedTo._id === user._id}
       />
     </div>
   );

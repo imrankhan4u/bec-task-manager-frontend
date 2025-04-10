@@ -204,6 +204,7 @@ const Tasks = () => {
           <h3>{task.title}</h3>
           <p>{task.description}</p>
           <p>Priority: {task.priority}</p>
+          <p>Assigned To: {task.assignedTo.name}</p>
           <p>Due: {new Date(task.dueDate).toLocaleDateString()}</p>
           <p>status: {task.status}</p>
           <div className="task-actions">
