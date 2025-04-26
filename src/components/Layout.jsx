@@ -70,7 +70,6 @@
 //   );
 // }
 
-
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -169,10 +168,14 @@ export default function Layout() {
 
           <nav style={navStyle}>
             <Link to="/dashboard" style={linkStyle('/dashboard')}>Dashboard</Link>
-            <Link to="/tasks" style={linkStyle('/tasks')}>Tasks</Link>
+            {/* Conditionally render Tasks link for roles: Principal, HOD, Faculty */}
+            {(userBaseRole === 'Principal' || userBaseRole === 'HOD' || userBaseRole === 'Faculty') && (
+              <Link to="/tasks" style={linkStyle('/tasks')}>Tasks</Link>
+            )}
             <Link to="/profile" style={linkStyle('/profile')}>Profile</Link>
 
-            {user?.role === 'Admin' && (
+            {/* Admin only routes */}
+            {userBaseRole === 'Admin' && (
               <>
                 <Link to="/departments" style={linkStyle('/departments')}>Departments</Link>
                 <Link to="/users" style={linkStyle('/users')}>Users</Link>
