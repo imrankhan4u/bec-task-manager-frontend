@@ -22,7 +22,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../api/axios";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
